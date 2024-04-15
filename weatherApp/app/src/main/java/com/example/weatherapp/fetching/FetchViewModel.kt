@@ -15,6 +15,7 @@ import retrofit2.http.Query
 @Serializable
 data class WeatherData(
     val timezone: String,
+    val current: Current,
     val hourly: Hourly,
 )
 @Serializable
@@ -23,11 +24,18 @@ data class Hourly(
     val temperature_2m: List<Double>
 )
 
+@Serializable
+data class Current(
+    val time: String,
+    val temperature_2m: Double
+)
+
 interface WeatherService {
     @GET("forecast")
     suspend fun getWeather(
         @Query("latitude") latitude: Double,
         @Query("longitude") longitude: Double,
+        @Query("current") current: String = "temperature_2m",
         @Query("hourly") hourly: String = "temperature_2m",
         @Query("timezone") timezone: String = "auto"
     ): WeatherData
@@ -53,8 +61,5 @@ class FetchViewModel : ViewModel() {
                 println("Fetching failed")
             }
         }
-    }
-    init {
-        fetchWeatherData(1.11,1.1)
     }
 }

@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
@@ -26,7 +27,6 @@ import com.example.weatherapp.location.LocationViewModel
 fun App() {
     val viewModel: LocationViewModel = viewModel()
     val fetchModel: FetchViewModel = viewModel()
-
 
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions(),
@@ -54,14 +54,21 @@ fun LocationDisplay(location: State<Location?>, fetchModel: FetchViewModel) {
         Text(text = location.value?.let { loc ->
             "Lat: ${loc.latitude}, Lon: ${loc.longitude}"
         } ?: "Location not available")
-    }
+        Button(onClick = {
+            location.value?.let { loc ->
+                fetchModel.fetchWeatherData(loc.latitude, loc.longitude)
 
-    LazyColumn (modifier = Modifier.padding(top = 20.dp)){
-        items(fetchModel.weatherData.value) { weather ->
-            Text(text = "Place ${weather.timezone}")
-            weather.hourly.time.forEachIndexed { index, time ->
-                val temperature = weather.hourly.temperature_2m[index]
-                Text(text = "Time: $time, Temperature: $temperature")
+            }
+        }) {
+            Text("Fetch Weather Data")
+        }
+        LazyColumn (modifier = Modifier.padding(top = 20.dp)){
+            items(fetchModel.weatherData.value) {
+                Text(text = "${it.timezone} ${it.current.temperature_2m}")
+                it.hourly.time.forEachIndexed { index, time ->
+                    val temperature = it.hourly.temperature_2m[index]
+                    Text(text = "Time: $time, Temperature: $temperature")
+                }
             }
         }
     }
