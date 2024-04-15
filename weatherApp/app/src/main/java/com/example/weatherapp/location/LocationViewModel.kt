@@ -12,7 +12,6 @@ import kotlinx.coroutines.flow.asStateFlow
 
 class LocationViewModel(application: Application) : AndroidViewModel(application) {
     private val locationRepository = LocationRepository(application)
-
     private val _location = MutableStateFlow<Location?>(null)
     val location : StateFlow<Location?> = _location.asStateFlow()
 

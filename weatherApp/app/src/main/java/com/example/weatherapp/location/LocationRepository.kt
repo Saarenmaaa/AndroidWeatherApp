@@ -15,7 +15,6 @@ import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 
-
 class LocationRepository(private val context: Context) {
     @RequiresApi(Build.VERSION_CODES.S)
     fun startLocationUpdates(callback: (Location?) -> Unit) {

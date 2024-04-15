@@ -45,3 +45,5 @@ fun LocationDisplay(location: State<Location?>) {
         "Lat: ${loc.latitude}, Lon: ${loc.longitude}"
     } ?: "Location not available")
 }
+
+https://api.open-meteo.com/v1/forecast?latitude=52.52&longitude=13.41&hourly=temperature_2m&daily=weather_code&timezone=auto
