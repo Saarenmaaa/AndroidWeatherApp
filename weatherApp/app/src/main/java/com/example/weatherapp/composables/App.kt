@@ -57,7 +57,6 @@ fun LocationDisplay(location: State<Location?>, fetchModel: FetchViewModel) {
         Button(onClick = {
             location.value?.let { loc ->
                 fetchModel.fetchWeatherData(loc.latitude, loc.longitude)
-
             }
         }) {
             Text("Fetch Weather Data")
@@ -65,8 +64,8 @@ fun LocationDisplay(location: State<Location?>, fetchModel: FetchViewModel) {
         LazyColumn (modifier = Modifier.padding(top = 20.dp)){
             items(fetchModel.weatherData.value) {
                 Text(text = "${it.timezone} ${it.current.temperature_2m}")
-                it.hourly.time.forEachIndexed { index, time ->
-                    val temperature = it.hourly.temperature_2m[index]
+                it.hourly.time.forEachIndexed { i, time ->
+                    val temperature = it.hourly.temperature_2m[i]
                     Text(text = "Time: $time, Temperature: $temperature")
                 }
             }
