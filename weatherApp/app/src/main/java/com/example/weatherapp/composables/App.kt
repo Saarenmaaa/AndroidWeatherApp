@@ -8,15 +8,21 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.lifecycle.viewmodel.compose.viewModel
 import android.Manifest
+import android.annotation.SuppressLint
 import android.location.Location
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.weatherapp.fetching.FetchViewModel
@@ -45,32 +51,43 @@ fun App() {
             Manifest.permission.ACCESS_COARSE_LOCATION
         ))
     }
-    LocationDisplay(viewModel.location.collectAsState(), fetchModel)
+    Column {
+        CurrentLocationDisplay(viewModel.location.collectAsState(), fetchModel)
+
+    }
 }
 
+@SuppressLint("StateFlowValueCalledInComposition")
 @Composable
-fun LocationDisplay(location: State<Location?>, fetchModel: FetchViewModel) {
-    Column {
-        Text(text = location.value?.let { loc ->
+fun CurrentLocationDisplay(location: State<Location?>, fetchModel: FetchViewModel) {
+    var isLoading by remember { mutableStateOf(true) }
+    Text(text = location.value?.let { loc ->
             "Lat: ${loc.latitude}, Lon: ${loc.longitude}"
-        } ?: "Location not available")
-        Button(onClick = {
-            location.value?.let { loc ->
-                fetchModel.fetchWeatherData(loc.latitude, loc.longitude)
+    } ?: "Location not available")
+    location.value?.let { loc ->
+        fetchModel.fetchWeatherData(loc.latitude, loc.longitude)
+    }
+    if (isLoading){
+        CircularProgressIndicator()
+    }
+
+        LaunchedEffect(fetchModel.weatherData.value) {
+            val weatherData = fetchModel.weatherData.value
+            if (weatherData != null && weatherData.isNotEmpty()) {
+                isLoading = false
             }
-        }) {
-            Text("Fetch Weather Data")
         }
+
         LazyColumn (modifier = Modifier.padding(top = 20.dp)){
             items(fetchModel.weatherData.value) {
-                Text(text = "${it.timezone} ${it.current.temperature_2m}")
+                Text(text = "Temp: ${it.current.temperature_2m}")
+                Text(text = "City: ${it.timezone}")
                 it.hourly.time.forEachIndexed { i, time ->
                     val temperature = it.hourly.temperature_2m[i]
                     Text(text = "Time: $time, Temperature: $temperature")
                 }
             }
         }
-    }
 }
 
 
