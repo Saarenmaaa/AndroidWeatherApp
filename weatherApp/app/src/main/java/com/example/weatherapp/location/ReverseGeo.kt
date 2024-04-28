@@ -1,16 +1,9 @@
 package com.example.weatherapp.location
 
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.weatherapp.fetching.WeatherData
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import retrofit2.Retrofit
@@ -30,7 +23,6 @@ import retrofit2.http.Query
     data class address_component(
         val long_name: String,
     )
-
 
     interface GeoService {
         @GET("json")
@@ -52,7 +44,7 @@ import retrofit2.http.Query
             viewModelScope.launch {
                 try {
                     val latlng = "${lat},${long}"
-                    val getGeo = geoService.getGeo(latlng).results[3].address_components[2].long_name
+                    val getGeo = geoService.getGeo(latlng).results[3].address_components[3].long_name
                     geo.value = getGeo
                     println(geo.value)
                 } catch (e: Exception) {

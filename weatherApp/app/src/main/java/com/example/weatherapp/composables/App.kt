@@ -10,6 +10,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import android.Manifest
 import android.location.Location
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.State
@@ -20,7 +21,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.unit.dp
-import com.example.weatherapp.fetching.FetchViewModel
+import com.example.weatherapp.fetching.FetchWeather
 import com.example.weatherapp.location.LocationViewModel
 import com.example.weatherapp.location.ReverseGeo
 
@@ -28,7 +29,7 @@ import com.example.weatherapp.location.ReverseGeo
 @Composable
 fun App() {
     val viewModel: LocationViewModel = viewModel()
-    val fetchModel: FetchViewModel = viewModel()
+    val fetchWeather: FetchWeather = viewModel()
     val reverseGeo: ReverseGeo = viewModel()
 
     val permissionLauncher = rememberLauncherForActivityResult(
@@ -50,13 +51,12 @@ fun App() {
     }
     Column (){
         Text(text = "Weather App")
-
-        CurrentLocationDisplay(viewModel.location.collectAsState(), fetchModel, reverseGeo)
+        CurrentLocationDisplay(viewModel.location.collectAsState(), fetchWeather, reverseGeo)
     }
 }
 
 @Composable
-fun CurrentLocationDisplay(location: State<Location?>, fetchModel: FetchViewModel, reverseGeo: ReverseGeo) {
+fun CurrentLocationDisplay(location: State<Location?>, fetchWeather: FetchWeather, reverseGeo: ReverseGeo) {
     var isLoading by remember { mutableStateOf(true) }
     var name by remember { mutableStateOf("") }
     var latitude by remember { mutableDoubleStateOf(0.0) }
@@ -69,6 +69,7 @@ fun CurrentLocationDisplay(location: State<Location?>, fetchModel: FetchViewMode
                 longitude = loc.longitude
                 if (name.isEmpty()) {
                     val cityName = reverseGeo.fetchGeoData(latitude, longitude)
+                    fetchWeather.fetchWeatherData(latitude, longitude)
                     name = cityName ?: "Unknown"
                 }
             } catch (e: Exception) {
@@ -80,12 +81,29 @@ fun CurrentLocationDisplay(location: State<Location?>, fetchModel: FetchViewMode
         }
     }
 
-
     if (isLoading) {
         CircularProgressIndicator()
     } else {
         if (name.isNotEmpty()) {
             Text(text = name)
+
+            val weather = fetchWeather.weatherData.collectAsState().value[0]
+            Row {
+                Text(text = weather.current.temperature_2m.toString())
+                Text(text = weather.current.weather_code.toString())
+            }
+            Column {
+                repeat(weather.daily.time.size) {
+                    Row {
+                        Text(text = "image " + weather.daily.weather_code[it].toString())
+                        Text(text = weather.daily.time[it].substring(6, ))
+                        Text(text = weather.daily.temperature_2m_max[it].toString() + "°C")
+                        Text(text = weather.daily.temperature_2m_min[it].toString() + "°C")
+                        Text(text = weather.daily.precipitation_probability_max[it].toString() + "%")
+                    }
+                }
+            }
+
         } else {
             CircularProgressIndicator()
 

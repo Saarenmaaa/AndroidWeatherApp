@@ -14,20 +14,22 @@ import retrofit2.http.Query
 
 @Serializable
 data class WeatherData(
-    val timezone: String,
     val current: Current,
-    val hourly: Hourly,
+    val daily: Daily,
 )
 @Serializable
-data class Hourly(
+data class Daily(
     val time: List<String>,
-    val temperature_2m: List<Double>
+    val temperature_2m_min: List<Double>,
+    val temperature_2m_max: List<Double>,
+    val weather_code: List<Int>,
+    val precipitation_probability_max: List<Int>
 )
 
 @Serializable
 data class Current(
-    val time: String,
-    val temperature_2m: Double
+    val temperature_2m: Double,
+    val weather_code: Int
 )
 
 interface WeatherService {
@@ -35,13 +37,13 @@ interface WeatherService {
     suspend fun getWeather(
         @Query("latitude") latitude: Double,
         @Query("longitude") longitude: Double,
-        @Query("current") current: String = "temperature_2m",
-        @Query("hourly") hourly: String = "temperature_2m",
+        @Query("current") current:String = ("temperature_2m,weather_code"),
+        @Query("daily") daily: String = ("weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max"),
         @Query("timezone") timezone: String = "auto"
     ): WeatherData
 }
 
-class FetchViewModel : ViewModel() {
+class FetchWeather : ViewModel() {
     private val _weatherData = MutableStateFlow<List<WeatherData>>(emptyList())
     val weatherData: StateFlow<List<WeatherData>> = _weatherData.asStateFlow()
 
@@ -55,7 +57,6 @@ class FetchViewModel : ViewModel() {
             try {
                 val weather = weatherService.getWeather(lat, long)
                 _weatherData.value = listOf(weather)
-                println(weather.hourly.temperature_2m)
             } catch (e: Exception) {
                 e.printStackTrace()
                 println("Fetching failed")
