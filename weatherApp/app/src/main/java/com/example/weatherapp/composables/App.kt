@@ -103,10 +103,8 @@ fun CurrentLocationDisplay(location: State<Location?>, fetchWeather: FetchWeathe
                     }
                 }
             }
-
         } else {
             CircularProgressIndicator()
-
         }
     }
 
