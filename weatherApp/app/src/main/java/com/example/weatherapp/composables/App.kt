@@ -11,6 +11,7 @@ import android.Manifest
 import android.location.Location
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -21,7 +22,12 @@ import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.weatherapp.R
 import com.example.weatherapp.fetching.FetchWeather
 import com.example.weatherapp.location.LocationViewModel
@@ -52,7 +58,7 @@ fun App() {
         ))
     }
     Column (){
-        Text(text = "Weather App")
+        Text(text = "Weather App", fontSize = 40.sp)
         CurrentLocationDisplay(viewModel.location.collectAsState(), fetchWeather, reverseGeo)
     }
 }
@@ -83,25 +89,32 @@ fun CurrentLocationDisplay(location: State<Location?>, fetchWeather: FetchWeathe
         }
     }
 
+    // TODO: resize ICONS
     if (isLoading) {
         CircularProgressIndicator()
     } else {
         if (name.isNotEmpty()) {
-            Text(text = name)
+            Text(
+                text = name,
+                fontSize = 30.sp,
+            )
             val weather = fetchWeather.weatherData.collectAsState().value[0]
-            Icon(painter = painterResource(id = getWeatherDrawableResourceId(weather.current.weather_code)), contentDescription = "")
             Row {
-                Text(text = weather.current.temperature_2m.toString())
-                Text(text = weather.current.weather_code.toString())
+                Text(text = weather.current.temperature_2m.toString()  + "°C", fontSize = 40.sp)
+                Icon(painter = painterResource(id = getWeatherDrawableResourceId(weather.current.weather_code)), contentDescription = "")
             }
             Column {
+                Text(text = "7 day weather, MAX°C/MIN°C, RAIN %", Modifier.padding(10.dp), fontSize = 20.sp)
                 repeat(weather.daily.time.size) {
-                    Row {
+                    Row (){
                         Icon(painter = painterResource(id = getWeatherDrawableResourceId(weather.daily.weather_code[it])), contentDescription = "")
-                        Text(text = weather.daily.time[it].substring(6, ))
-                        Text(text = weather.daily.temperature_2m_max[it].toString() + "°C")
-                        Text(text = weather.daily.temperature_2m_min[it].toString() + "°C")
-                        Text(text = weather.daily.precipitation_probability_max[it].toString() + "%")
+                        Text(text = weather.daily.time[it].substring(5, ), Modifier.padding(10.dp), fontSize = 20.sp)
+                        Text(text =
+                            weather.daily.temperature_2m_max[it].toString() + "°C/" + weather.daily.temperature_2m_min[it].toString() + "°C",
+                            Modifier.padding(10.dp), fontSize = 20.sp)
+
+                        Text(text = weather.daily.precipitation_probability_max[it].toString(), Modifier.padding(10.dp), fontSize = 20.sp)
+                        Icon(painter = painterResource(id = R.drawable.precipition), contentDescription = "")
                     }
                 }
             }
