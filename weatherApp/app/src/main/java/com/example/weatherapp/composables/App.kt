@@ -9,9 +9,11 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.lifecycle.viewmodel.compose.viewModel
 import android.Manifest
 import android.location.Location
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -22,6 +24,7 @@ import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -57,8 +60,8 @@ fun App() {
             Manifest.permission.ACCESS_COARSE_LOCATION
         ))
     }
-    Column (){
-        Text(text = "Weather App", fontSize = 40.sp)
+    Column (horizontalAlignment = Alignment.CenterHorizontally){
+        Text(text = "Weather", fontSize = 40.sp)
         CurrentLocationDisplay(viewModel.location.collectAsState(), fetchWeather, reverseGeo)
     }
 }
@@ -101,20 +104,20 @@ fun CurrentLocationDisplay(location: State<Location?>, fetchWeather: FetchWeathe
             val weather = fetchWeather.weatherData.collectAsState().value[0]
             Row {
                 Text(text = weather.current.temperature_2m.toString()  + "°C", fontSize = 40.sp)
-                Icon(painter = painterResource(id = getWeatherDrawableResourceId(weather.current.weather_code)), contentDescription = "")
+                Icon(painter = painterResource(id = getWeatherDrawableResourceId(weather.current.weather_code)), contentDescription = "", Modifier.size(70.dp))
             }
             Column {
-                Text(text = "7 day weather, MAX°C/MIN°C, RAIN %", Modifier.padding(10.dp), fontSize = 20.sp)
+                Text(text = "7d Weather MAX/MIN°C RAIN %", Modifier.padding(10.dp), fontSize = 20.sp)
                 repeat(weather.daily.time.size) {
                     Row (){
-                        Icon(painter = painterResource(id = getWeatherDrawableResourceId(weather.daily.weather_code[it])), contentDescription = "")
+                        Icon(painter = painterResource(id = getWeatherDrawableResourceId(weather.daily.weather_code[it])), contentDescription = "", Modifier.padding(top = 10.dp))
                         Text(text = weather.daily.time[it].substring(5, ), Modifier.padding(10.dp), fontSize = 20.sp)
                         Text(text =
                             weather.daily.temperature_2m_max[it].toString() + "°C/" + weather.daily.temperature_2m_min[it].toString() + "°C",
                             Modifier.padding(10.dp), fontSize = 20.sp)
 
-                        Text(text = weather.daily.precipitation_probability_max[it].toString(), Modifier.padding(10.dp), fontSize = 20.sp)
-                        Icon(painter = painterResource(id = R.drawable.precipition), contentDescription = "")
+                        Text(text = weather.daily.precipitation_probability_max[it].toString(), Modifier.padding(start = 10.dp, top = 10.dp), fontSize = 20.sp)
+                        Icon(painter = painterResource(id = R.drawable.precipition), contentDescription = "" ,Modifier.padding(top = 10.dp))
                     }
                 }
             }
