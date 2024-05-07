@@ -9,9 +9,10 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.lifecycle.viewmodel.compose.viewModel
 import android.Manifest
 import android.location.Location
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.CircularProgressIndicator
@@ -27,8 +28,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.weatherapp.R
@@ -81,22 +80,23 @@ fun CurrentLocationDisplay(location: State<Location?>, fetchWeather: FetchWeathe
                 if (name.isEmpty()) {
                     val cityName = reverseGeo.fetchGeoData(latitude, longitude)
                     fetchWeather.fetchWeatherData(latitude, longitude)
-                    name = cityName ?: "Unknown"
+                    name = cityName
                 }
+                isLoading = false
             } catch (e: Exception) {
                 e.printStackTrace()
                 println("Fetching failed")
-            } finally {
-                isLoading = false
             }
         }
     }
 
-    // TODO: resize ICONS
     if (isLoading) {
-        CircularProgressIndicator()
+        Text(text = "Finding Location")
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center){
+            CircularProgressIndicator()
+        }
     } else {
-        if (name.isNotEmpty()) {
+        if (fetchWeather.weatherData.collectAsState().value.isNotEmpty()) {
             Text(
                 text = name,
                 fontSize = 30.sp,
@@ -106,8 +106,9 @@ fun CurrentLocationDisplay(location: State<Location?>, fetchWeather: FetchWeathe
                 Text(text = weather.current.temperature_2m.toString()  + "°C", fontSize = 40.sp)
                 Icon(painter = painterResource(id = getWeatherDrawableResourceId(weather.current.weather_code)), contentDescription = "", Modifier.size(70.dp))
             }
+            Text(text = "Wind Speed: " + weather.current.wind_speed_10m.toString() + " m/s", fontSize = 20.sp)
             Column {
-                Text(text = "7d Weather MAX/MIN°C RAIN %", Modifier.padding(10.dp), fontSize = 20.sp)
+                Text(text = "7d Weather MAX/MIN°C", Modifier.padding(10.dp), fontSize = 20.sp)
                 repeat(weather.daily.time.size) {
                     Row (){
                         Icon(painter = painterResource(id = getWeatherDrawableResourceId(weather.daily.weather_code[it])), contentDescription = "", Modifier.padding(top = 10.dp))
@@ -115,35 +116,18 @@ fun CurrentLocationDisplay(location: State<Location?>, fetchWeather: FetchWeathe
                         Text(text =
                             weather.daily.temperature_2m_max[it].toString() + "°C/" + weather.daily.temperature_2m_min[it].toString() + "°C",
                             Modifier.padding(10.dp), fontSize = 20.sp)
-
                         Text(text = weather.daily.precipitation_probability_max[it].toString(), Modifier.padding(start = 10.dp, top = 10.dp), fontSize = 20.sp)
                         Icon(painter = painterResource(id = R.drawable.precipition), contentDescription = "" ,Modifier.padding(top = 10.dp))
                     }
                 }
             }
         } else {
-            CircularProgressIndicator()
-        }
-    }
-
-    /*
-    if (isLoading){
-        CircularProgressIndicator()
-    }
-     */
-
-        /*
-        LazyColumn (modifier = Modifier.padding(top = 20.dp)){
-            items(fetchModel.weatherData.value) {
-                Text(text = "Temp: ${it.current.temperature_2m}")
-                Text(text = "${it.timezone}")
-                it.hourly.time.forEachIndexed { i, time ->
-                    val temperature = it.hourly.temperature_2m[i]
-                    Text(text = "Time: $time, Temperature: $temperature")
-                }
+            Text(text = "Location Found")
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center){
+                CircularProgressIndicator()
             }
         }
-         */
+    }
 }
 
 fun getWeatherDrawableResourceId(weatherCode: Int): Int {

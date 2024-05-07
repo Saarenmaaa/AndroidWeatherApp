@@ -29,7 +29,8 @@ data class Daily(
 @Serializable
 data class Current(
     val temperature_2m: Double,
-    val weather_code: Int
+    val weather_code: Int,
+    val wind_speed_10m: Double
 )
 
 interface WeatherService {
@@ -37,7 +38,7 @@ interface WeatherService {
     suspend fun getWeather(
         @Query("latitude") latitude: Double,
         @Query("longitude") longitude: Double,
-        @Query("current") current:String = ("temperature_2m,weather_code"),
+        @Query("current") current:String = ("temperature_2m,weather_code,wind_speed_10m"),
         @Query("daily") daily: String = ("weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max"),
         @Query("timezone") timezone: String = "auto"
     ): WeatherData
