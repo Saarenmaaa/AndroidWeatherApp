@@ -9,12 +9,15 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.lifecycle.viewmodel.compose.viewModel
 import android.Manifest
 import android.location.Location
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -27,7 +30,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.weatherapp.R
@@ -60,7 +68,6 @@ fun App() {
         ))
     }
     Column (horizontalAlignment = Alignment.CenterHorizontally){
-        Text(text = "Weather", fontSize = 40.sp)
         CurrentLocationDisplay(viewModel.location.collectAsState(), fetchWeather, reverseGeo)
     }
 }
@@ -84,7 +91,6 @@ fun CurrentLocationDisplay(location: State<Location?>, fetchWeather: FetchWeathe
                 }
                 isLoading = false
             } catch (e: Exception) {
-                e.printStackTrace()
                 println("Fetching failed")
             }
         }
@@ -96,28 +102,46 @@ fun CurrentLocationDisplay(location: State<Location?>, fetchWeather: FetchWeathe
             CircularProgressIndicator()
         }
     } else {
-        if (fetchWeather.weatherData.collectAsState().value.isNotEmpty()) {
-            Text(
-                text = name,
-                fontSize = 30.sp,
-            )
+        if (name.isNotEmpty()) {
+            println(fetchWeather.weatherData.collectAsState().value)
             val weather = fetchWeather.weatherData.collectAsState().value[0]
-            Row {
-                Text(text = weather.current.temperature_2m.toString()  + "°C", fontSize = 40.sp)
-                Icon(painter = painterResource(id = getWeatherDrawableResourceId(weather.current.weather_code)), contentDescription = "", Modifier.size(70.dp))
+            Column (horizontalAlignment = Alignment.CenterHorizontally){
+                Text(text = "Now", Modifier.padding(top = 10.dp),fontSize = 20.sp)
+                Row (){
+                        Text(text = name, fontSize = 30.sp, modifier = Modifier.padding(top = 11.dp), fontWeight = FontWeight.Bold)
+                        Icon(painter = painterResource(id = getWeatherDrawableResourceId(weather.current.weather_code)), contentDescription = "", Modifier.size(70.dp))
+                    }
+                    Text(text = weather.current.temperature_2m.toString()  + "°C", fontSize = 70.sp,
+                        fontFamily = FontFamily.Cursive, fontWeight = FontWeight.Bold)
             }
-            Text(text = "Wind Speed: " + weather.current.wind_speed_10m.toString() + " m/s", fontSize = 20.sp)
             Column {
-                Text(text = "7d Weather MAX/MIN°C", Modifier.padding(10.dp), fontSize = 20.sp)
                 repeat(weather.daily.time.size) {
-                    Row (){
-                        Icon(painter = painterResource(id = getWeatherDrawableResourceId(weather.daily.weather_code[it])), contentDescription = "", Modifier.padding(top = 10.dp))
-                        Text(text = weather.daily.time[it].substring(5, ), Modifier.padding(10.dp), fontSize = 20.sp)
-                        Text(text =
-                            weather.daily.temperature_2m_max[it].toString() + "°C/" + weather.daily.temperature_2m_min[it].toString() + "°C",
-                            Modifier.padding(10.dp), fontSize = 20.sp)
-                        Text(text = weather.daily.precipitation_probability_max[it].toString(), Modifier.padding(start = 10.dp, top = 10.dp), fontSize = 20.sp)
-                        Icon(painter = painterResource(id = R.drawable.precipition), contentDescription = "" ,Modifier.padding(top = 10.dp))
+                    Row (Modifier.padding(10.dp)){
+                        Button(onClick = { /*TODO*/ }, shape = RoundedCornerShape(5)) {
+
+                            var date = weather.daily.time[it].substring(8, ) + "." + weather.daily.time[it].substring(5, 7)
+                            Text(text = date,
+                                Modifier.padding(start = 0.dp), fontSize = 20.sp)
+
+                            Column (Modifier.weight(0.6f), horizontalAlignment = Alignment.CenterHorizontally){
+                                Text(text = "Max " + weather.daily.temperature_2m_max[it].toString() + "°C", fontSize = 16.sp)
+                                Text(text = "Min " + weather.daily.temperature_2m_min[it].toString() + "°C", fontSize = 16.sp)
+                            }
+                            Box(
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .clip(RoundedCornerShape(10))
+                                    .background(Color.LightGray)
+                            ) {
+                                Icon(
+                                    painter = painterResource(id = getWeatherDrawableResourceId(weather.daily.weather_code[it])),
+                                    contentDescription = "",
+                                    modifier = Modifier.matchParentSize()
+                                )
+                            }
+                            Text(text = weather.daily.precipitation_probability_max[it].toString(), Modifier.padding(start = 10.dp), fontSize = 20.sp)
+                            Icon(painter = painterResource(id = R.drawable.precipition), contentDescription = "", Modifier.size(40.dp))
+                        }
                     }
                 }
             }
