@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -175,16 +176,19 @@ fun CurrentLocationDisplay(
                         fontFamily = FontFamily.Cursive, fontWeight = FontWeight.Bold
                     )
                 }
-                Column {
-                    repeat(weather.daily.time.size) {
+                LazyColumn {
+                    items(weather.daily.time.size) { index ->
+                        val date = weather.daily.time[index].substring(8) + "." + weather.daily.time[index].substring(5, 7)
                         Row(Modifier.padding(10.dp)) {
-                            var date = weather.daily.time[it].substring(8,) + "." + weather.daily.time[it].substring(5, 7)
-                            Button(onClick = {navController.navigate("dayView/${date}")}, shape = RoundedCornerShape(5)) {
+                            Button(
+                                onClick = { navController.navigate("dayView/${date}") },
+                                shape = RoundedCornerShape(5),
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
                                 Text(text = date, Modifier.padding(start = 0.dp), fontSize = 20.sp)
-                                Column(Modifier.weight(0.6f), horizontalAlignment = Alignment.CenterHorizontally)
-                                {
-                                    Text(text = "Max " + weather.daily.temperature_2m_max[it].toString() + "°C", fontSize = 16.sp)
-                                    Text(text = "Min " + weather.daily.temperature_2m_min[it].toString() + "°C", fontSize = 16.sp)
+                                Column(Modifier.weight(0.6f), horizontalAlignment = Alignment.CenterHorizontally) {
+                                    Text(text = "Max ${weather.daily.temperature_2m_max[index]}°C", fontSize = 16.sp)
+                                    Text(text = "Min ${weather.daily.temperature_2m_min[index]}°C", fontSize = 16.sp)
                                 }
                                 Box(
                                     modifier = Modifier
@@ -192,23 +196,23 @@ fun CurrentLocationDisplay(
                                         .clip(RoundedCornerShape(10))
                                         .background(Color.LightGray)
                                 ) {
-                                    Icon(painter = painterResource(
-                                        id = getWeatherDrawableResourceId(weather.daily.weather_code[it])
-                                        ), contentDescription = "", modifier = Modifier.matchParentSize()
+                                    Icon(
+                                        painter = painterResource(id = getWeatherDrawableResourceId(weather.daily.weather_code[index])),
+                                        contentDescription = "",
+                                        modifier = Modifier.matchParentSize()
                                     )
                                 }
-                                Text(
-                                    text = weather.daily.precipitation_probability_max[it].toString(),
-                                    Modifier.padding(start = 10.dp), fontSize = 20.sp
-                                )
+                                Text(text = weather.daily.precipitation_probability_max[index].toString(), Modifier.padding(start = 10.dp), fontSize = 20.sp)
                                 Icon(
                                     painter = painterResource(id = R.drawable.precipition),
-                                    contentDescription = "", Modifier.size(40.dp)
+                                    contentDescription = "",
+                                    modifier = Modifier.size(40.dp)
                                 )
                             }
                         }
                     }
                 }
+
             } else {
                 Text(text = "Location Found")
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
