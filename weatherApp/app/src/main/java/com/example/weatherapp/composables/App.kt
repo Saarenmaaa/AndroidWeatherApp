@@ -11,6 +11,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.location.Location
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -90,13 +91,13 @@ fun App() {
 
 @Composable
 fun DayView(navController: NavHostController, date: String, hourly: Hourly) {
-    LazyColumn {
+    LazyColumn(verticalArrangement = Arrangement.spacedBy(5.dp)) {
         item {
-            Text(text = date)
+            Text(text = date, fontSize = 30.sp)
         }
         items(hourly.time.size) { index ->
             if (hourly.time[index].substring(8, 10) == date.substring(0, 2)) {
-                Row (modifier = Modifier.fillMaxSize()){
+                Row (modifier = Modifier.fillMaxWidth().background(Color.LightGray).padding(5.dp), verticalAlignment = Alignment.CenterVertically){
                     Text(text = hourly.time[index].substring(11))
                     Icon(
                         painter = painterResource(id = getWeatherDrawableResourceId(hourly.weather_code[index])),
@@ -173,7 +174,7 @@ fun CurrentLocationDisplay(
                     }
                     Text(
                         text = weather.current.temperature_2m.toString() + "°C", fontSize = 70.sp,
-                        fontFamily = FontFamily.Cursive, fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold
                     )
                 }
                 LazyColumn {
