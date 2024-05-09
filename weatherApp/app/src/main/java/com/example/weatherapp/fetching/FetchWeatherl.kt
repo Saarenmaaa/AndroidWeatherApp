@@ -16,6 +16,7 @@ import retrofit2.http.Query
 data class WeatherData(
     val current: Current,
     val daily: Daily,
+    val hourly: Hourly
 )
 @Serializable
 data class Daily(
@@ -33,13 +34,23 @@ data class Current(
     val wind_speed_10m: Double
 )
 
+@Serializable
+data class Hourly(
+    val time: List<String>,
+    val temperature_2m: List<Double>,
+    val precipitation_probability: List<Int>,
+    val weather_code: List<Int>,
+    val wind_speed_10m: List<Double>
+)
+
 interface WeatherService {
     @GET("forecast")
     suspend fun getWeather(
         @Query("latitude") latitude: Double,
         @Query("longitude") longitude: Double,
         @Query("current") current:String = ("temperature_2m,weather_code,wind_speed_10m"),
-        @Query("daily") daily: String = ("weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max"),
+        @Query("hourly") hourly:String = ("temperature_2m,precipitation_probability,weather_code,wind_speed_10m"),
+        @Query("daily") daily:String = ("weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max"),
         @Query("timezone") timezone: String = "auto"
     ): WeatherData
 }
