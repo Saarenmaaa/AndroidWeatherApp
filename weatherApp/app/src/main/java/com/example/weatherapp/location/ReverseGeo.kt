@@ -11,8 +11,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
 import retrofit2.http.Query
 
-    @Serializable
-    data class GeoData(
+    @Serializable    data class GeoData(
         val results: List<Result>,
     )
     @Serializable
@@ -44,7 +43,7 @@ import retrofit2.http.Query
             viewModelScope.launch {
                 try {
                     val latlng = "${lat},${long}"
-                    val getGeo = geoService.getGeo(latlng).results[3].address_components[3].long_name
+                    val getGeo = geoService.getGeo(latlng).results[3].address_components[2].long_name
                     geo.value = getGeo
                     println(geo.value)
                 } catch (e: Exception) {

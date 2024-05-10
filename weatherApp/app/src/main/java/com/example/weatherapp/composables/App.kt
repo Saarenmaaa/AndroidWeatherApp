@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -24,6 +25,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.State
@@ -35,10 +37,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
@@ -54,6 +56,8 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.util.Locale
+import kotlin.math.roundToInt
+
 
 @SuppressLint("StateFlowValueCalledInComposition")
 @RequiresApi(Build.VERSION_CODES.S)
@@ -158,7 +162,7 @@ fun CurrentLocationDisplay(
         }
     }
 
-    Column (horizontalAlignment = Alignment.CenterHorizontally) {
+    Column (modifier = Modifier.fillMaxSize()) {
         if (isLoading) {
             Text(text = "Finding Location")
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -166,62 +170,319 @@ fun CurrentLocationDisplay(
             }
         } else {
             if (name.isNotEmpty()) {
-                println(fetchWeather.weatherData.collectAsState().value)
                 val weather = fetchWeather.weatherData.collectAsState().value[0]
-                Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.weight(0.3f)) {
-                    Text(text = "Now", Modifier.padding(top = 10.dp), fontSize = 25.sp)
-                    Row() {
-                        Text(text = name, fontSize = 40.sp, modifier = Modifier.padding(top = 11.dp), fontWeight = FontWeight.Bold)
-                        Icon(painter = painterResource(id = getWeatherDrawableResourceId(weather.current.weather_code)), contentDescription = "", Modifier.size(80.dp))
-                    }
-                    Text(text = weather.current.temperature_2m.toString() + "°C", fontSize = 70.sp, fontWeight = FontWeight.Bold)
-                }
-                LazyColumn (modifier = Modifier.weight(0.6f)){
-                    items(weather.daily.time.size) { index ->
-                        val dates = weather.daily.time[index].substring(8) + "." + weather.daily.time[index].substring(5, 7)
-                        val parsedDate = LocalDate.parse("$dates.${LocalDate.now().year}", DateTimeFormatter.ofPattern("dd.MM.yyyy"))
-                        val date = parsedDate.dayOfWeek.getDisplayName(TextStyle.FULL, Locale.ENGLISH)+ " " + dates
+                val dates = weather.daily.time[0].substring(8) + "." + weather.daily.time[0].substring(5, 7)
+                val parsedDate = LocalDate.parse("$dates.${LocalDate.now().year}", DateTimeFormatter.ofPattern("dd.MM.yyyy"))
+                val date = parsedDate.dayOfWeek.getDisplayName(TextStyle.FULL, Locale.ENGLISH)+ " " + dates
 
-                        Row(Modifier.padding(horizontal = 10.dp, vertical = 5.dp)) {
-                            Button(
-                                colors = ButtonDefaults.buttonColors(
-                                    Color.Black,
-                                    contentColor = Color.Red
-                                ),
-                                onClick = { navController.navigate("dayView/${date}") },
-                                shape = RoundedCornerShape(5),
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                Column (Modifier.background(Color.White), horizontalAlignment = Alignment.CenterHorizontally){
-                                    Text(text = date.substring(0,3), fontSize = 16.sp)
-                                    Text(text = date.substring(date.length - 5), fontSize = 16.sp)
-                                }
-                                Column(
-                                    Modifier.background(Color.Gray), horizontalAlignment = Alignment.CenterHorizontally) {
-                                    Text(text = "Max ${weather.daily.temperature_2m_max[index]}°C", fontSize = 16.sp)
-                                    Text(text = "Min ${weather.daily.temperature_2m_min[index]}°C", fontSize = 16.sp)
-                                }
-                                Box(modifier = Modifier
-                                    .size(40.dp)
-                                    .clip(RoundedCornerShape(10))
-                                    .background(Color.LightGray)) {
-                                    Icon(
-                                        painter = painterResource(id = getWeatherDrawableResourceId(weather.daily.weather_code[index])),
-                                        contentDescription = "", modifier = Modifier.matchParentSize()
-                                    )
-                                }
-                                Text(text = weather.daily.precipitation_probability_max[index].toString(), Modifier.padding(start = 10.dp), fontSize = 15.sp)
+                Button(
+                        onClick = { navController.navigate("dayView/${date}") },
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .weight(0.28f)
+                            .padding(20.dp),
+                        shape = RoundedCornerShape(10),
+                    ) {
+                        Column {
+                            Row {
                                 Icon(
-                                    painter = painterResource(id = R.drawable.precipition),
+                                    painter = painterResource(id = R.drawable.location_pin_svgrepo_com),
                                     contentDescription = "",
-                                    modifier = Modifier.size(20.dp),
+                                    modifier = Modifier.size(15.dp)
+                                )
+                                Text(text = name, fontSize = 15.sp, fontWeight = FontWeight.Bold)
+                            }
+                            Text(text = "Today " + weather.daily.time[0].substring(8) + "." + weather.daily.time[0].substring(5, 7), fontSize = 15.sp, fontWeight = FontWeight.ExtraLight)
+                            Row {
+                                Icon(
+                                    painter = painterResource(id = getWeatherDrawableResourceId(weather.current.weather_code)),
+                                    contentDescription = "",
+                                    modifier = Modifier
+                                        .size(110.dp)
+                                        .weight(1f)
+                                )
+                                Text(
+                                    text = "${weather.current.temperature_2m.roundToInt()}°",
+                                    fontSize = 80.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier
+                                        .weight(1f)
                                 )
                             }
                         }
                     }
+
+                Column (modifier = Modifier
+                    .weight(0.62f)
+                    )
+                {
+                    Row(modifier = Modifier.weight(0.5f)) {
+                        Button(
+                            colors = ButtonDefaults.buttonColors(
+                                Color.Blue,
+                                contentColor = Color.White
+                            ),
+                            onClick = { navController.navigate("dayView/${date}") },
+                            shape = RoundedCornerShape(5),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .weight(0.33f)
+                                .padding(3.dp)
+                        ) {
+                            val dates = weather.daily.time[1].substring(8) + "." + weather.daily.time[1].substring(5, 7)
+                            val parsedDate = LocalDate.parse("$dates.${LocalDate.now().year}", DateTimeFormatter.ofPattern("dd.MM.yyyy"))
+                            val date = parsedDate.dayOfWeek.getDisplayName(TextStyle.FULL, Locale.ENGLISH)+ " " + dates
+                            Column (Modifier.fillMaxSize()){
+                                Box(modifier = Modifier
+                                    .fillMaxWidth()
+                                    .weight(0.4f))
+                                {
+                                    Icon(painter = painterResource(id = getWeatherDrawableResourceId(weather.daily.weather_code[1])),
+                                        contentDescription = "",
+                                        modifier = Modifier.matchParentSize())
+                                }
+                                Column (modifier = Modifier.fillMaxWidth().weight(0.6f), horizontalAlignment = Alignment.CenterHorizontally){
+                                    Divider(modifier = Modifier.height(2.dp))
+                                    Text(
+                                        text = date.substring(0, 3).uppercase(),
+                                        fontSize = 25.sp,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis,
+                                        modifier = Modifier.fillMaxWidth().weight(0.5f)
+                                    )
+                                    Row (modifier = Modifier.fillMaxWidth().weight(0.25f)){
+                                        Text(text = "${weather.daily.temperature_2m_max[1].roundToInt()}° |", fontSize = 20.sp)
+                                        Text(text = " ${weather.daily.temperature_2m_min[1].roundToInt()}°", fontSize = 20.sp)
+                                    }
+                                    Row (modifier = Modifier.fillMaxWidth().weight(0.25f)){
+                                        Text(text = weather.daily.precipitation_probability_max[1].toString(), fontSize = 20.sp)
+                                        Icon(painter = painterResource(id = R.drawable.precipition), contentDescription = "", modifier = Modifier.size(30.dp))
+                                    }
+                                }
+                                Divider(modifier = Modifier.height(2.dp))
+                            }
+                        }
+                        Button(
+                            colors = ButtonDefaults.buttonColors(
+                                Color.Blue,
+                                contentColor = Color.White
+                            ),
+                            onClick = { navController.navigate("dayView/${date}") },
+                            shape = RoundedCornerShape(5),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .weight(0.33f)
+                                .padding(3.dp)
+                        ) {
+                            Column (Modifier.fillMaxSize()){
+                                Box(modifier = Modifier
+                                    .fillMaxWidth()
+                                    .weight(0.4f))
+                                {
+                                    Icon(painter = painterResource(id = getWeatherDrawableResourceId(weather.daily.weather_code[1])),
+                                        contentDescription = "",
+                                        modifier = Modifier.matchParentSize())
+                                }
+                                Column (modifier = Modifier.fillMaxWidth().weight(0.6f), horizontalAlignment = Alignment.CenterHorizontally){
+                                    Divider(modifier = Modifier.height(2.dp))
+                                    Text(
+                                        text = date.substring(0, 3).uppercase(),
+                                        fontSize = 25.sp,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis,
+                                        modifier = Modifier.fillMaxWidth().weight(0.5f)
+                                    )
+                                    Row (modifier = Modifier.fillMaxWidth().weight(0.25f)){
+                                        Text(text = "${weather.daily.temperature_2m_max[1].roundToInt()}° |", fontSize = 20.sp)
+                                        Text(text = " ${weather.daily.temperature_2m_min[1].roundToInt()}°", fontSize = 20.sp)
+                                    }
+                                    Row (modifier = Modifier.fillMaxWidth().weight(0.25f)){
+                                        Text(text = weather.daily.precipitation_probability_max[1].toString(), fontSize = 20.sp)
+                                        Icon(painter = painterResource(id = R.drawable.precipition), contentDescription = "", modifier = Modifier.size(30.dp))
+                                    }
+                                }
+                                Divider(modifier = Modifier.height(2.dp))
+                            }
+
+                        }
+                        Button(
+                            colors = ButtonDefaults.buttonColors(
+                                Color.Blue,
+                                contentColor = Color.White
+                            ),
+                            onClick = { navController.navigate("dayView/${date}") },
+                            shape = RoundedCornerShape(5),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .weight(0.33f)
+                                .padding(3.dp)
+                        ) {
+                            Column (Modifier.fillMaxSize()){
+                                Box(modifier = Modifier
+                                    .fillMaxWidth()
+                                    .weight(0.4f))
+                                {
+                                    Icon(painter = painterResource(id = getWeatherDrawableResourceId(weather.daily.weather_code[1])),
+                                        contentDescription = "",
+                                        modifier = Modifier.matchParentSize())
+                                }
+                                Column (modifier = Modifier.fillMaxWidth().weight(0.6f), horizontalAlignment = Alignment.CenterHorizontally){
+                                    Divider(modifier = Modifier.height(2.dp))
+                                    Text(
+                                        text = date.substring(0, 3).uppercase(),
+                                        fontSize = 25.sp,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis,
+                                        modifier = Modifier.fillMaxWidth().weight(0.5f)
+                                    )
+                                    Row (modifier = Modifier.fillMaxWidth().weight(0.25f)){
+                                        Text(text = "${weather.daily.temperature_2m_max[1].roundToInt()}° |", fontSize = 20.sp)
+                                        Text(text = " ${weather.daily.temperature_2m_min[1].roundToInt()}°", fontSize = 20.sp)
+                                    }
+                                    Row (modifier = Modifier.fillMaxWidth().weight(0.25f)){
+                                        Text(text = weather.daily.precipitation_probability_max[1].toString(), fontSize = 20.sp)
+                                        Icon(painter = painterResource(id = R.drawable.precipition), contentDescription = "", modifier = Modifier.size(30.dp))
+                                    }
+                                }
+                                Divider(modifier = Modifier.height(2.dp))
+                            }
+
+                        }
+                        }
+                    Row(modifier = Modifier.weight(0.5f)) {
+                        Button(
+                            colors = ButtonDefaults.buttonColors(
+                                Color.Blue,
+                                contentColor = Color.White
+                            ),
+                            onClick = { navController.navigate("dayView/${date}") },
+                            shape = RoundedCornerShape(5),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .weight(0.33f)
+                                .padding(3.dp)
+                        ) {
+                            Column (Modifier.fillMaxSize()){
+                                Box(modifier = Modifier
+                                    .fillMaxWidth()
+                                    .weight(0.4f))
+                                {
+                                    Icon(painter = painterResource(id = getWeatherDrawableResourceId(weather.daily.weather_code[1])),
+                                        contentDescription = "",
+                                        modifier = Modifier.matchParentSize())
+                                }
+                                Column (modifier = Modifier.fillMaxWidth().weight(0.6f), horizontalAlignment = Alignment.CenterHorizontally){
+                                    Divider(modifier = Modifier.height(2.dp))
+                                    Text(
+                                        text = date.substring(0, 3).uppercase(),
+                                        fontSize = 25.sp,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis,
+                                        modifier = Modifier.fillMaxWidth().weight(0.5f)
+                                    )
+                                    Row (modifier = Modifier.fillMaxWidth().weight(0.25f)){
+                                        Text(text = "${weather.daily.temperature_2m_max[1].roundToInt()}° |", fontSize = 20.sp)
+                                        Text(text = " ${weather.daily.temperature_2m_min[1].roundToInt()}°", fontSize = 20.sp)
+                                    }
+                                    Row (modifier = Modifier.fillMaxWidth().weight(0.25f)){
+                                        Text(text = weather.daily.precipitation_probability_max[1].toString(), fontSize = 20.sp)
+                                        Icon(painter = painterResource(id = R.drawable.precipition), contentDescription = "", modifier = Modifier.size(30.dp))
+                                    }
+                                }
+                                Divider(modifier = Modifier.height(2.dp))
+                            }
+                        }
+                        Button(
+                            colors = ButtonDefaults.buttonColors(
+                                Color.Blue,
+                                contentColor = Color.White
+                            ),
+                            onClick = { navController.navigate("dayView/${date}") },
+                            shape = RoundedCornerShape(5),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .weight(0.33f)
+                                .padding(3.dp)
+                        ) {
+                            Column (Modifier.fillMaxSize()){
+                                Box(modifier = Modifier
+                                    .fillMaxWidth()
+                                    .weight(0.4f))
+                                {
+                                    Icon(painter = painterResource(id = getWeatherDrawableResourceId(weather.daily.weather_code[1])),
+                                        contentDescription = "",
+                                        modifier = Modifier.matchParentSize())
+                                }
+                                Column (modifier = Modifier.fillMaxWidth().weight(0.6f), horizontalAlignment = Alignment.CenterHorizontally){
+                                    Divider(modifier = Modifier.height(2.dp))
+                                    Text(
+                                        text = date.substring(0, 3).uppercase(),
+                                        fontSize = 25.sp,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis,
+                                        modifier = Modifier.fillMaxWidth().weight(0.5f)
+                                    )
+                                    Row (modifier = Modifier.fillMaxWidth().weight(0.25f)){
+                                        Text(text = "${weather.daily.temperature_2m_max[1].roundToInt()}° |", fontSize = 20.sp)
+                                        Text(text = " ${weather.daily.temperature_2m_min[1].roundToInt()}°", fontSize = 20.sp)
+                                    }
+                                    Row (modifier = Modifier.fillMaxWidth().weight(0.25f)){
+                                        Text(text = weather.daily.precipitation_probability_max[1].toString(), fontSize = 20.sp)
+                                        Icon(painter = painterResource(id = R.drawable.precipition), contentDescription = "", modifier = Modifier.size(30.dp))
+                                    }
+                                }
+                                Divider(modifier = Modifier.height(2.dp))
+                            }
+
+                        }
+                        Button(
+                            colors = ButtonDefaults.buttonColors(
+                                Color.Blue,
+                                contentColor = Color.White
+                            ),
+                            onClick = { navController.navigate("dayView/${date}") },
+                            shape = RoundedCornerShape(5),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .weight(0.33f)
+                                .padding(3.dp)
+                        ) {
+                            Column (Modifier.fillMaxSize()){
+                                Box(modifier = Modifier
+                                    .fillMaxWidth()
+                                    .weight(0.4f))
+                                {
+                                    Icon(painter = painterResource(id = getWeatherDrawableResourceId(weather.daily.weather_code[1])),
+                                        contentDescription = "",
+                                        modifier = Modifier.matchParentSize())
+                                }
+                                Column (modifier = Modifier.fillMaxWidth().weight(0.6f), horizontalAlignment = Alignment.CenterHorizontally){
+                                    Divider(modifier = Modifier.height(2.dp))
+                                    Text(
+                                        text = date.substring(0, 3).uppercase(),
+                                        fontSize = 25.sp,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis,
+                                        modifier = Modifier.fillMaxWidth().weight(0.5f)
+                                    )
+                                    Row (modifier = Modifier.fillMaxWidth().weight(0.25f)){
+                                        Text(text = "${weather.daily.temperature_2m_max[1].roundToInt()}° |", fontSize = 20.sp)
+                                        Text(text = " ${weather.daily.temperature_2m_min[1].roundToInt()}°", fontSize = 20.sp)
+                                    }
+                                    Row (modifier = Modifier.fillMaxWidth().weight(0.25f)){
+                                        Text(text = weather.daily.precipitation_probability_max[1].toString(), fontSize = 20.sp)
+                                        Icon(painter = painterResource(id = R.drawable.precipition), contentDescription = "", modifier = Modifier.size(30.dp))
+                                    }
+                                }
+                                Divider(modifier = Modifier.height(2.dp))
+                            }
+
+                        }
+                    }
+
                 }
-                Text(text = "makkara", modifier = Modifier.weight(0.1f))
-            } else {
+                }
+            else {
                 Text(text = "Location Found")
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator()
@@ -230,7 +491,6 @@ fun CurrentLocationDisplay(
         }
     }
 }
-
 fun getWeatherDrawableResourceId(weatherCode: Int): Int {
     return when (weatherCode) {
         0 -> R.drawable.a0
