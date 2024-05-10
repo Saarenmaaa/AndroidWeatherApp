@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -37,7 +38,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -50,6 +50,10 @@ import com.example.weatherapp.fetching.FetchWeather
 import com.example.weatherapp.fetching.Hourly
 import com.example.weatherapp.location.LocationViewModel
 import com.example.weatherapp.location.ReverseGeo
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.time.format.TextStyle
+import java.util.Locale
 
 @SuppressLint("StateFlowValueCalledInComposition")
 @RequiresApi(Build.VERSION_CODES.S)
@@ -84,34 +88,41 @@ fun App() {
         }
         composable("dayView/{date}") { backStackEntry ->
             val date = backStackEntry.arguments?.getString("date") ?: ""
-            DayView(navController = navController, date = date, hourly = fetchWeather.weatherData.value[0].hourly)
+            DayView(date = date, hourly = fetchWeather.weatherData.value[0].hourly)
         }
     }
 }
 
 @Composable
-fun DayView(navController: NavHostController, date: String, hourly: Hourly) {
-    LazyColumn(verticalArrangement = Arrangement.spacedBy(5.dp)) {
-        item {
-            Text(text = date, fontSize = 30.sp)
+fun DayView(date: String, hourly: Hourly) {
+    val dateL = date.length
+    Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center){
+        Column (modifier = Modifier.weight(0.2f), horizontalAlignment = Alignment.CenterHorizontally){
+            Text(text = date.substring(0, dateL-6), fontSize = 50.sp, fontWeight = FontWeight.Bold)
+            Text(text = date.substring( dateL-5,), fontSize = 30.sp, fontWeight = FontWeight.ExtraLight)
         }
-        items(hourly.time.size) { index ->
-            if (hourly.time[index].substring(8, 10) == date.substring(0, 2)) {
-                Row (modifier = Modifier.fillMaxWidth().background(Color.LightGray).padding(5.dp), verticalAlignment = Alignment.CenterVertically){
-                    Text(text = hourly.time[index].substring(11))
-                    Icon(
-                        painter = painterResource(id = getWeatherDrawableResourceId(hourly.weather_code[index])),
-                        contentDescription = "",
-                        modifier = Modifier.size(30.dp)
-                    )
-                    Text(text = "${hourly.temperature_2m[index]}°C")
-                    Text(text = "${hourly.wind_speed_10m[index]} m/s ")
-                    Text(text = "${hourly.precipitation_probability[index]}")
-                    Icon(
-                        painter = painterResource(id = R.drawable.precipition),
-                        contentDescription = "",
-                        modifier = Modifier.size(70.dp)
-                    )
+        LazyColumn (modifier = Modifier.weight(0.80f)){
+            item {
+            }
+            items(hourly.time.size) { index ->
+                if (hourly.time[index].substring(8, 10) == date.substring( dateL-5,dateL-3)) {
+                    Row (modifier = Modifier
+                        .fillMaxWidth()
+                        .background(Color.LightGray)
+                        .padding(5.dp), verticalAlignment = Alignment.CenterVertically){
+                        Text(text = hourly.time[index].substring(11))
+                        Icon(
+                            painter = painterResource(id = getWeatherDrawableResourceId(hourly.weather_code[index])),
+                            contentDescription = "", modifier = Modifier.size(30.dp)
+                        )
+                        Text(text = "${hourly.temperature_2m[index]}°C")
+                        Text(text = "${hourly.wind_speed_10m[index]} m/s ")
+                        Text(text = "${hourly.precipitation_probability[index]}")
+                        Icon(
+                            painter = painterResource(id = R.drawable.precipition),
+                            contentDescription = "", modifier = Modifier.size(70.dp)
+                        )
+                    }
                 }
             }
         }
@@ -157,63 +168,59 @@ fun CurrentLocationDisplay(
             if (name.isNotEmpty()) {
                 println(fetchWeather.weatherData.collectAsState().value)
                 val weather = fetchWeather.weatherData.collectAsState().value[0]
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(text = "Now", Modifier.padding(top = 10.dp), fontSize = 20.sp)
+                Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.weight(0.3f)) {
+                    Text(text = "Now", Modifier.padding(top = 10.dp), fontSize = 25.sp)
                     Row() {
-                        Text(
-                            text = name,
-                            fontSize = 30.sp,
-                            modifier = Modifier.padding(top = 11.dp),
-                            fontWeight = FontWeight.Bold
-                        )
-                        Icon(
-                            painter = painterResource(id = getWeatherDrawableResourceId(weather.current.weather_code)),
-                            contentDescription = "",
-                            Modifier.size(70.dp)
-                        )
+                        Text(text = name, fontSize = 40.sp, modifier = Modifier.padding(top = 11.dp), fontWeight = FontWeight.Bold)
+                        Icon(painter = painterResource(id = getWeatherDrawableResourceId(weather.current.weather_code)), contentDescription = "", Modifier.size(80.dp))
                     }
-                    Text(
-                        text = weather.current.temperature_2m.toString() + "°C", fontSize = 70.sp,
-                        fontWeight = FontWeight.Bold
-                    )
+                    Text(text = weather.current.temperature_2m.toString() + "°C", fontSize = 70.sp, fontWeight = FontWeight.Bold)
                 }
-                LazyColumn {
+                LazyColumn (modifier = Modifier.weight(0.6f)){
                     items(weather.daily.time.size) { index ->
-                        val date = weather.daily.time[index].substring(8) + "." + weather.daily.time[index].substring(5, 7)
-                        Row(Modifier.padding(10.dp)) {
+                        val dates = weather.daily.time[index].substring(8) + "." + weather.daily.time[index].substring(5, 7)
+                        val parsedDate = LocalDate.parse("$dates.${LocalDate.now().year}", DateTimeFormatter.ofPattern("dd.MM.yyyy"))
+                        val date = parsedDate.dayOfWeek.getDisplayName(TextStyle.FULL, Locale.ENGLISH)+ " " + dates
+
+                        Row(Modifier.padding(horizontal = 10.dp, vertical = 5.dp)) {
                             Button(
+                                colors = ButtonDefaults.buttonColors(
+                                    Color.Black,
+                                    contentColor = Color.Red
+                                ),
                                 onClick = { navController.navigate("dayView/${date}") },
                                 shape = RoundedCornerShape(5),
                                 modifier = Modifier.fillMaxWidth()
                             ) {
-                                Text(text = date, Modifier.padding(start = 0.dp), fontSize = 20.sp)
-                                Column(Modifier.weight(0.6f), horizontalAlignment = Alignment.CenterHorizontally) {
+                                Column (Modifier.background(Color.White), horizontalAlignment = Alignment.CenterHorizontally){
+                                    Text(text = date.substring(0,3), fontSize = 16.sp)
+                                    Text(text = date.substring(date.length - 5), fontSize = 16.sp)
+                                }
+                                Column(
+                                    Modifier.background(Color.Gray), horizontalAlignment = Alignment.CenterHorizontally) {
                                     Text(text = "Max ${weather.daily.temperature_2m_max[index]}°C", fontSize = 16.sp)
                                     Text(text = "Min ${weather.daily.temperature_2m_min[index]}°C", fontSize = 16.sp)
                                 }
-                                Box(
-                                    modifier = Modifier
-                                        .size(40.dp)
-                                        .clip(RoundedCornerShape(10))
-                                        .background(Color.LightGray)
-                                ) {
+                                Box(modifier = Modifier
+                                    .size(40.dp)
+                                    .clip(RoundedCornerShape(10))
+                                    .background(Color.LightGray)) {
                                     Icon(
                                         painter = painterResource(id = getWeatherDrawableResourceId(weather.daily.weather_code[index])),
-                                        contentDescription = "",
-                                        modifier = Modifier.matchParentSize()
+                                        contentDescription = "", modifier = Modifier.matchParentSize()
                                     )
                                 }
-                                Text(text = weather.daily.precipitation_probability_max[index].toString(), Modifier.padding(start = 10.dp), fontSize = 20.sp)
+                                Text(text = weather.daily.precipitation_probability_max[index].toString(), Modifier.padding(start = 10.dp), fontSize = 15.sp)
                                 Icon(
                                     painter = painterResource(id = R.drawable.precipition),
                                     contentDescription = "",
-                                    modifier = Modifier.size(40.dp)
+                                    modifier = Modifier.size(20.dp),
                                 )
                             }
                         }
                     }
                 }
-
+                Text(text = "makkara", modifier = Modifier.weight(0.1f))
             } else {
                 Text(text = "Location Found")
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
