@@ -165,8 +165,7 @@ fun CurrentLocationDisplay(
     }
 
     Column (modifier = Modifier
-        .fillMaxSize()
-        .background(Color.LightGray)) {
+        .fillMaxSize()) {
         if (isLoading) {
             Column(modifier = Modifier.fillMaxSize(), Arrangement.Center, Alignment.CenterHorizontally) {
                 Text(text = "Finding Location", fontSize = 25.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(10.dp))
