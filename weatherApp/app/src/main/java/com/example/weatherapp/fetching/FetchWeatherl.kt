@@ -12,12 +12,15 @@ import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
 import retrofit2.http.Query
 
+// WeatherData Dataclass
 @Serializable
 data class WeatherData(
     val current: Current,
     val daily: Daily,
     val hourly: Hourly
 )
+
+// Daily Dataclass
 @Serializable
 data class Daily(
     val time: List<String>,
@@ -30,7 +33,7 @@ data class Daily(
     val uv_index_max: List<Double>,
     val rain_sum: List<Double>
 )
-
+// Current dataClass
 @Serializable
 data class Current(
     val temperature_2m: Double,
@@ -38,7 +41,7 @@ data class Current(
     val wind_speed_10m: Double,
     val is_day: Int,
 )
-
+// Hourly dataClass
 @Serializable
 data class Hourly(
     val time: List<String>,
@@ -47,6 +50,11 @@ data class Hourly(
     val weather_code: List<Int>,
     val wind_speed_10m: List<Double>
 )
+
+/**
+ * WeatherService interface for weather API
+ * Returns WeatherData
+ */
 
 interface WeatherService {
     @GET("forecast")
@@ -60,6 +68,9 @@ interface WeatherService {
     ): WeatherData
 }
 
+/**
+ * Fetch ViewModel for fetching weatherdata
+ */
 class FetchWeather : ViewModel() {
     private val _weatherData = MutableStateFlow<List<WeatherData>>(emptyList())
     val weatherData: StateFlow<List<WeatherData>> = _weatherData.asStateFlow()

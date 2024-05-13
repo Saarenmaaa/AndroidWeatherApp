@@ -27,6 +27,9 @@ fun App() {
     val reverseGeo: ReverseGeo = viewModel()
     val navController = rememberNavController()
 
+    /**
+     * GPS permission for tracking
+     */
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions(),
         onResult = { permissions ->
@@ -45,6 +48,10 @@ fun App() {
         ))
     }
 
+    /**
+     * Navigation for navigating between Screens through application
+     */
+
     NavHost(navController = navController, startDestination = "currentLocationScreen") {
         composable("currentLocationScreen") {
             CurrentLocationDisplay(location = viewModel.location.collectAsState(), fetchWeather, reverseGeo, navController)
@@ -57,6 +64,11 @@ fun App() {
     }
 }
 
+/**
+ * Function to get right ICON for spesific weatherCode
+ * @param weatherCode as input
+ * @Returns R.drawable icon CODE
+ */
 fun getWeatherDrawableResourceId(weatherCode: Int): Int {
     return when (weatherCode) {
         0 -> R.drawable.a0

@@ -26,6 +26,14 @@ import com.example.weatherapp.R
 import com.example.weatherapp.fetching.WeatherData
 import kotlin.math.roundToInt
 
+/**
+ * Second Screen for application to display more detailed data from day.
+ * Displays Weather Hourly and more spesific things from days weather.
+ * @param date: String
+ * @param weatherData: WeatherData
+ * @param dayIdx: String
+ *
+ */
 @Composable
 fun DayView(date: String, weatherData: WeatherData, dayIdx: String) {
     val dayIdx = dayIdx.toInt()
@@ -126,6 +134,5 @@ fun DayView(date: String, weatherData: WeatherData, dayIdx: String) {
                 }
             }
         }
-
     }
 }

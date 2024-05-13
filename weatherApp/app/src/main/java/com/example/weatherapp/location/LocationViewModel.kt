@@ -14,6 +14,10 @@ class LocationViewModel(application: Application) : AndroidViewModel(application
     private val _location = MutableStateFlow<Location?>(null)
     val location : StateFlow<Location?> = _location.asStateFlow()
 
+    /**
+     * Function to startLocation updates
+     *
+     */
     @RequiresApi(Build.VERSION_CODES.S)
     fun startLocationUpdates() {
         locationRepository.startLocationUpdates { location ->

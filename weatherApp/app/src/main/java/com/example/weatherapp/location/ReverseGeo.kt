@@ -11,7 +11,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
 import retrofit2.http.Query
 
-    @Serializable    data class GeoData(
+    @Serializable data class GeoData(
         val results: List<Result>,
     )
     @Serializable
@@ -23,6 +23,7 @@ import retrofit2.http.Query
         val long_name: String,
     )
 
+    // GeoService to get reverse GeoCoding from latitude and longitude
     interface GeoService {
         @GET("json")
         suspend fun getGeo(
@@ -31,6 +32,10 @@ import retrofit2.http.Query
         ): GeoData
     }
 
+    /**
+     * ViewModel for Google reverseGeocoding API
+     * Takes lat, long values and returns name of the district
+     */
     class ReverseGeo : ViewModel() {
         private var geo: MutableState<String> = mutableStateOf("")
 
@@ -45,7 +50,6 @@ import retrofit2.http.Query
                     val latlng = "${lat},${long}"
                     val getGeo = geoService.getGeo(latlng).results[3].address_components[2].long_name
                     geo.value = getGeo
-                    println(geo.value)
                 } catch (e: Exception) {
                     e.printStackTrace()
                     println("Fetching failed")

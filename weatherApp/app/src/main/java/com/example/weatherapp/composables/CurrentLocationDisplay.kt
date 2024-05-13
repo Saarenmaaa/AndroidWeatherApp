@@ -45,6 +45,17 @@ import java.time.format.TextStyle
 import java.util.Locale
 import kotlin.math.roundToInt
 
+
+/**
+ * Main Screen for application
+ * Displays current weatherData and 7 days.
+ * Has buttons to go to secondScreen to display more detailed data by the day.
+ * @param location: State<Location?>,
+ * @param fetchWeather: FetchWeather
+ * @param reverseGeo: ReverseGeo
+ * @param navController: NavHostController
+ *
+ */
 @Composable
 fun CurrentLocationDisplay(
     location: State<Location?>,
@@ -57,6 +68,10 @@ fun CurrentLocationDisplay(
     var name by remember { mutableStateOf("") }
     var latitude by remember { mutableDoubleStateOf(0.0) }
     var longitude by remember { mutableDoubleStateOf(0.0) }
+
+    /**
+     * LaunchedEffect to do featherFetching based on location switching.
+     */
 
     LaunchedEffect(location.value) {
         location.value?.let { loc ->
@@ -112,8 +127,7 @@ fun CurrentLocationDisplay(
                                 )
                                 Text(text = name, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                             }
-                            Text(
-                                text = "Today " + weather.daily.time[0].substring(8) + "." + weather.daily.time[0].substring(5, 7),
+                            Text(text = "Today " + weather.daily.time[0].substring(8) + "." + weather.daily.time[0].substring(5, 7),
                                 fontSize = 10.sp, fontWeight = FontWeight.ExtraLight, modifier = Modifier.padding(start = 5.dp)
                             )
                         }
@@ -155,6 +169,7 @@ fun CurrentLocationDisplay(
                         Text(text = (" " + (weather.current.wind_speed_10m / 3.6).roundToInt().toString() + " m/s "))
                     }
                 }
+                /* Displays Weatherdata in 2x3 rows */
                 Column (modifier = Modifier.weight(0.5f))
                 {
                     repeat(2) { rowIdx ->
@@ -237,6 +252,7 @@ fun CurrentLocationDisplay(
                 }
 
             }
+            /* While weatherData is being fetched app displays Progressindicator */
             else {
                 Column(modifier = Modifier.fillMaxSize(), Arrangement.Center, Alignment.CenterHorizontally) {
                     Text(text = "Location Found", fontSize = 25.sp, fontWeight = FontWeight.ExtraLight, modifier = Modifier.padding(10.dp))
