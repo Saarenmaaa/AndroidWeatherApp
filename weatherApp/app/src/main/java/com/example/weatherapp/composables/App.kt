@@ -16,15 +16,14 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
@@ -38,6 +37,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
@@ -51,7 +51,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.weatherapp.R
 import com.example.weatherapp.fetching.FetchWeather
-import com.example.weatherapp.fetching.Hourly
+import com.example.weatherapp.fetching.WeatherData
 import com.example.weatherapp.location.LocationViewModel
 import com.example.weatherapp.location.ReverseGeo
 import java.time.LocalDate
@@ -92,46 +92,109 @@ fun App() {
         composable("currentLocationScreen") {
             CurrentLocationDisplay(location = viewModel.location.collectAsState(), fetchWeather, reverseGeo, navController)
         }
-        composable("dayView/{date}") { backStackEntry ->
+        composable("dayView/{date}/{idx}") { backStackEntry ->
             val date = backStackEntry.arguments?.getString("date") ?: ""
-            DayView(date = date, hourly = fetchWeather.weatherData.value[0].hourly)
+            val idx = backStackEntry.arguments?.getInt("idx") ?: 0
+            DayView(date = date, weatherData = fetchWeather.weatherData.value[0], dayIdx = idx)
         }
     }
 }
 
 @Composable
-fun DayView(date: String, hourly: Hourly) {
+fun DayView(date: String, weatherData: WeatherData, dayIdx: Int) {
+    val hourly = weatherData.hourly
     val dateL = date.length
     Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center){
-        Column (modifier = Modifier.weight(0.2f), horizontalAlignment = Alignment.CenterHorizontally){
-            Text(text = date.substring(0, dateL-6), fontSize = 50.sp, fontWeight = FontWeight.Bold)
+        Column (modifier = Modifier
+            .weight(0.2f)
+            .fillMaxWidth()
+            .padding(top = 20.dp), horizontalAlignment = Alignment.CenterHorizontally){
+            Text(text = date.substring(0, dateL-6), fontSize = 50.sp, fontWeight = FontWeight.ExtraLight)
             Text(text = date.substring( dateL-5,), fontSize = 30.sp, fontWeight = FontWeight.ExtraLight)
         }
-        LazyColumn (modifier = Modifier.weight(0.80f)){
-            item {
-            }
-            items(hourly.time.size) { index ->
-                if (hourly.time[index].substring(8, 10) == date.substring( dateL-5,dateL-3)) {
-                    Row (modifier = Modifier
-                        .fillMaxWidth()
-                        .background(Color.LightGray)
-                        .padding(5.dp), verticalAlignment = Alignment.CenterVertically){
-                        Text(text = hourly.time[index].substring(11))
-                        Icon(
-                            painter = painterResource(id = getWeatherDrawableResourceId(hourly.weather_code[index])),
-                            contentDescription = "", modifier = Modifier.size(30.dp)
-                        )
-                        Text(text = "${hourly.temperature_2m[index]}°C")
-                        Text(text = "${hourly.wind_speed_10m[index]} m/s ")
-                        Text(text = "${hourly.precipitation_probability[index]}")
-                        Icon(
-                            painter = painterResource(id = R.drawable.precipition),
-                            contentDescription = "", modifier = Modifier.size(70.dp)
-                        )
+        Column (modifier = Modifier
+            .padding(10.dp)
+            .weight(0.4f)
+            .clip(RoundedCornerShape(6))
+            .background(Color.DarkGray.copy(0.2f))
+            )
+        {
+            Text(text = "HOURLY FORECAST", color = Color.White, modifier = Modifier.padding(start= 15.dp, top = 15.dp))
+            LazyRow(modifier = Modifier.padding(10.dp)) {
+                items(hourly.time.size) { index ->
+                    val time = hourly.time[index]
+                    if (time.substring(8, 10) == date.substring(date.length - 5, date.length - 3)) {
+                        Column(modifier = Modifier
+                            .padding(5.dp)
+                            .shadow(2.dp, shape = RoundedCornerShape(5.dp)).fillMaxHeight(),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(text = time.substring(11),fontWeight = FontWeight.ExtraLight, fontSize = 25.sp, modifier = Modifier.padding(top = 5.dp))
+                            Icon(
+                                painter = painterResource(id = getWeatherDrawableResourceId(hourly.weather_code[index])),
+                                contentDescription = "",
+                                modifier = Modifier.size(100.dp),
+                                tint = Color.White
+                            )
+                            Text(text = "${hourly.temperature_2m[index].roundToInt()}°", fontSize = 30.sp)
+                            Row {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.wind_svgrepo_com),
+                                    contentDescription = "",
+                                    modifier = Modifier
+                                        .size(15.dp)
+                                        .padding(top = 5.dp),
+                                    tint = Color.LightGray
+                                )
+                                Text(text = "${(hourly.wind_speed_10m[index] / 3.6).roundToInt()} m/s ", fontSize = 15.sp)
+                            }
+                            Row {
+                                Text(text = "${hourly.precipitation_probability[index]}")
+                                Icon(
+                                    painter = painterResource(id = R.drawable.precipition),
+                                    contentDescription = "",
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                        }
                     }
                 }
             }
         }
+        Column (modifier = Modifier
+            .padding(10.dp)
+            .weight(0.4f)
+            .clip(RoundedCornerShape(6))
+            .background(Color.DarkGray.copy(0.2f))
+            .fillMaxWidth()
+        )
+        {
+                Text(text = "DAY INFO", color = Color.White, modifier = Modifier
+                    .padding(start = 15.dp, top = 15.dp)
+                    .weight(0.25f))
+                Row (modifier = Modifier.weight(0.35f)){
+                    Column (modifier = Modifier.weight(0.5f).padding(start = 15.dp)){
+                        Text(text = "SUNRISE")
+                        Text(text = weatherData.daily.sunrise[dayIdx].substring(weatherData.daily.sunrise[dayIdx].length-5),fontWeight = FontWeight.ExtraLight, color = Color.White)
+                    }
+                    Column (modifier = Modifier.weight(0.5f).padding(start = 15.dp)){
+                        Text(text = "SUNSET")
+                        Text(text = weatherData.daily.sunset[dayIdx].substring(weatherData.daily.sunset[dayIdx].length-5), fontWeight = FontWeight.ExtraLight, color = Color.White)
+                    }
+                }
+                Row (modifier = Modifier.weight(0.35f)){
+                    Column (modifier = Modifier.weight(0.5f).padding(start = 15.dp)){
+                        Text(text = "RAIN SUM")
+                        Text(text = weatherData.daily.rain_sum[dayIdx].toString() + "mm", fontWeight = FontWeight.ExtraLight, color = Color.White)
+
+                    }
+                    Column (modifier = Modifier.weight(0.5f).padding(start = 15.dp)){
+                        Text(text = "MAX UV INDEX")
+                        Text(text = weatherData.daily.uv_index_max[dayIdx].roundToInt().toString(), fontWeight = FontWeight.ExtraLight, color = Color.White)
+                    }
+                }
+        }
+
     }
 }
 
@@ -140,7 +203,8 @@ fun CurrentLocationDisplay(
     location: State<Location?>,
     fetchWeather: FetchWeather,
     reverseGeo: ReverseGeo,
-    navController: NavHostController,)
+    navController: NavHostController,
+    )
     {
     var isLoading by remember { mutableStateOf(true) }
     var name by remember { mutableStateOf("") }
@@ -168,8 +232,8 @@ fun CurrentLocationDisplay(
         .fillMaxSize()) {
         if (isLoading) {
             Column(modifier = Modifier.fillMaxSize(), Arrangement.Center, Alignment.CenterHorizontally) {
-                Text(text = "Finding Location", fontSize = 25.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(10.dp))
-                CircularProgressIndicator()
+                Text(text = "Finding Location", fontSize = 25.sp, fontWeight = FontWeight.ExtraLight, modifier = Modifier.padding(10.dp))
+                CircularProgressIndicator(color = Color.DarkGray)
             }
         } else {
             if (name.isNotEmpty()) {
@@ -178,155 +242,143 @@ fun CurrentLocationDisplay(
                 val parsedDate = LocalDate.parse("$dates.${LocalDate.now().year}", DateTimeFormatter.ofPattern("dd.MM.yyyy"))
                 val date = parsedDate.dayOfWeek.getDisplayName(TextStyle.FULL, Locale.ENGLISH)+ " " + dates
 
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .weight(0.3f)
-                        .padding(5.dp)
-                        .shadow(1.dp, shape = RoundedCornerShape(5.dp))
-                        .clickable { navController.navigate("dayView/${date}") },
+                Column(modifier = Modifier
+                    .fillMaxSize()
+                    .weight(0.3f)
+                    .padding(5.dp)
+                    .shadow(1.dp, shape = RoundedCornerShape(5.dp))
+                    .clickable { navController.navigate("dayView/${date}/${0}") },
                     horizontalAlignment = Alignment.Start
                 ) {
-                    Column(
-                        modifier = Modifier
-                            .weight(0.2f),
-                        horizontalAlignment = Alignment.Start
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .padding(top = 15.dp, start = 10.dp)
-                                .fillMaxWidth(),
-                        ) {
+                    Column(modifier = Modifier.weight(0.2f), horizontalAlignment = Alignment.Start)
+                    {
+                        Column(modifier = Modifier
+                            .padding(top = 15.dp, start = 10.dp)
+                            .fillMaxWidth(),)
+                        {
                             Row {
                                 Icon(
                                     painter = painterResource(id = R.drawable.location_pin_svgrepo_com),
-                                    contentDescription = "",
-                                    modifier = Modifier
+                                    contentDescription = "", modifier = Modifier
                                         .size(15.dp)
-                                        .padding(top = 5.dp)
+                                        .padding(top = 5.dp),
                                 )
-                                Text(
-                                    text = name,
-                                    fontSize = 12.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
+                                Text(text = name, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                             }
                             Text(
                                 text = "Today " + weather.daily.time[0].substring(8) + "." + weather.daily.time[0].substring(5, 7),
-                                fontSize = 10.sp,
-                                fontWeight = FontWeight.ExtraLight,
-                                modifier = Modifier.padding(start = 5.dp)
+                                fontSize = 10.sp, fontWeight = FontWeight.ExtraLight, modifier = Modifier.padding(start = 5.dp)
                             )
                         }
                     }
-                    Row(
-                        modifier = Modifier
-                            .weight(0.8f),
-                    ) {
-                        Icon(
-                            painter = painterResource(id = getWeatherDrawableResourceId(weather.current.weather_code)),
-                            contentDescription = "",
-                            modifier = Modifier.weight(0.4f).fillMaxSize()
-                        )
-                        Column (modifier = Modifier.weight(0.6f), horizontalAlignment = Alignment.CenterHorizontally){
+
+                    Row(modifier = Modifier.weight(0.6f))
+                    {
+                        Column (modifier = Modifier
+                            .weight(0.4f)
+                            .padding(5.dp)){
+                            Icon(
+                                painter = painterResource(id = getWeatherDrawableResourceId(weather.current.weather_code)),
+                                contentDescription = "", modifier = Modifier
+                                    .fillMaxSize(),
+                                tint = Color.White
+                            )
+                        }
+                        Column (modifier = Modifier
+                            .weight(0.6f)
+                            .padding(0.dp, 5.dp, 5.dp, 5.dp), horizontalAlignment = Alignment.CenterHorizontally, ){
                             Text(
                                 text = "${weather.current.temperature_2m.roundToInt()}°",
-                                fontSize = 100.sp,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier.weight(0.7f)
+                                fontSize = 100.sp, fontWeight = FontWeight.Bold, modifier = Modifier.weight(0.6f)
                             )
-                            Row(modifier = Modifier.weight(0.3f), verticalAlignment = Alignment.CenterVertically) {
-                                Icon(painter = painterResource(id = R.drawable.baseline_arrow_upward_24), contentDescription = "", tint = Color.Red)
-                                Text(text = weather.daily.temperature_2m_max[0].roundToInt().toString() + "° |")
-                                Icon(painter = painterResource(id = R.drawable.baseline_arrow_downward_24), contentDescription = "", tint = Color.Blue)
-                                Text(text = weather.daily.temperature_2m_min[0].roundToInt().toString() + "°")
-                            }
                         }
+                    }
 
+                    Row(modifier = Modifier
+                        .weight(0.2f)
+                        .fillMaxWidth()
+                        .padding(end = 20.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.End) {
+                        Icon(painter = painterResource(id = R.drawable.baseline_arrow_upward_24), contentDescription = "", tint = Color.Red)
+                        Text(text = weather.daily.temperature_2m_max[0].roundToInt().toString() + "°")
+                        Icon(painter = painterResource(id = R.drawable.baseline_arrow_downward_24), contentDescription = "", tint = Color.Blue)
+                        Text(text = weather.daily.temperature_2m_min[0].roundToInt().toString() + "°  ")
+                        Text(text = weather.daily.precipitation_probability_max[0].toString(), fontSize = 15.sp)
+                        Icon(painter = painterResource(id = R.drawable.precipition), contentDescription = "", modifier = Modifier.size(25.dp), tint = Color.Blue.copy(0.5f))
+                        Icon(painter = painterResource(id = R.drawable.wind_svgrepo_com), contentDescription = "", modifier = Modifier.size(15.dp), tint = Color.LightGray)
+                        Text(text = (" " + (weather.current.wind_speed_10m / 3.6).roundToInt().toString() + " m/s "))
                     }
                 }
-                Column (modifier = Modifier
-                    .weight(0.5f)
-                    )
+                Column (modifier = Modifier.weight(0.5f))
                 {
-                    repeat(2) { rowIndex ->
+                    repeat(2) { rowIdx ->
                         Row(modifier = Modifier.weight(0.5f)) {
-                            repeat(3) { columnIndex ->
-                                val index = rowIndex * 3 + columnIndex + 1
-                                val dates = weather.daily.time[index].substring(8) + "." + weather.daily.time[index].substring(5, 7)
-                                val parsedDate = LocalDate.parse("$dates.${LocalDate.now().year}", DateTimeFormatter.ofPattern("dd.MM.yyyy"))
-                                val date = parsedDate.dayOfWeek.getDisplayName(TextStyle.FULL, Locale.ENGLISH) + " " + dates
+                            repeat(3) { colIdx->
+                                val idx = rowIdx * 3 + colIdx + 1
+                                val dater = weather.daily.time[idx].substring(8) + "." + weather.daily.time[idx].substring(5, 7)
+                                val parsedDay = LocalDate.parse("$dater.${LocalDate.now().year}", DateTimeFormatter.ofPattern("dd.MM.yyyy"))
+                                val objectDate = parsedDay.dayOfWeek.getDisplayName(TextStyle.FULL, Locale.ENGLISH) + " " + dater
                                 Column(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .weight(0.33f)
                                         .padding(3.dp)
-                                        .clickable { navController.navigate("dayView/${date}") }
+                                        .clickable { navController.navigate("dayView/${objectDate}/${idx}") }
                                         .shadow(1.dp, shape = RoundedCornerShape(5.dp))
                                 ) {
-
-                                    Column(Modifier.fillMaxSize().padding(10.dp)) {
-                                        Box(
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .weight(0.4f)
-                                        ) {
+                                    Column(
+                                        Modifier
+                                            .fillMaxSize()
+                                            .padding(10.dp)) {
+                                        Box(modifier = Modifier
+                                            .fillMaxWidth()
+                                            .weight(0.4f))
+                                        {
                                             Icon(
-                                                painter = painterResource(id = getWeatherDrawableResourceId(weather.daily.weather_code[index])),
-                                                contentDescription = "",
-                                                modifier = Modifier.matchParentSize()
+                                                painter = painterResource(id = getWeatherDrawableResourceId(weather.daily.weather_code[idx])),
+                                                contentDescription = "", modifier = Modifier.matchParentSize(),tint = Color.White
                                             )
                                         }
                                         Column(
                                             modifier = Modifier
                                                 .fillMaxWidth()
-                                                .weight(0.6f), horizontalAlignment = Alignment.CenterHorizontally
-                                        ) {
+                                                .weight(0.6f), horizontalAlignment = Alignment.CenterHorizontally)
+                                        {
                                             Divider(modifier = Modifier.height(2.dp))
                                             Text(
-                                                text = date.substring(0, 3).uppercase(),
+                                                text = objectDate.substring(0, 3).uppercase(),
+                                                fontWeight = FontWeight.ExtraLight,
                                                 fontSize = 25.sp,
                                                 maxLines = 1,
                                                 overflow = TextOverflow.Ellipsis,
                                                 modifier = Modifier
                                                     .fillMaxWidth()
-                                                    .weight(0.5f)
+                                                    .weight(0.5f),
+                                                color = Color.White
                                             )
-                                            Row(
-                                                modifier = Modifier
-                                                    .fillMaxWidth()
-                                                    .weight(0.25f), horizontalArrangement = Arrangement.Center
-                                            ) {
+                                            Row(modifier = Modifier
+                                                .fillMaxWidth()
+                                                .weight(0.25f),
+                                                horizontalArrangement = Arrangement.Center
+                                            )
+                                            {
                                                 Icon(
                                                     painter = painterResource(id = R.drawable.baseline_arrow_upward_24),
-                                                    contentDescription = "",
-                                                    tint = Color.Red
+                                                    contentDescription = "", tint = Color.Red, modifier = Modifier.size(20.dp)
                                                 )
-                                                Text(
-                                                    text = "${weather.daily.temperature_2m_max[index].roundToInt()}° |",
-                                                    fontSize = 15.sp
-                                                )
+                                                Text(text = "${weather.daily.temperature_2m_max[idx].roundToInt()}°", fontSize = 14.sp, fontWeight = FontWeight.Bold)
                                                 Icon(
                                                     painter = painterResource(id = R.drawable.baseline_arrow_downward_24),
-                                                    contentDescription = "",
-                                                    tint = Color.Blue
+                                                    contentDescription = "", tint = Color.Blue, modifier = Modifier.size(20.dp)
                                                 )
-                                                Text(
-                                                    text = " ${weather.daily.temperature_2m_min[index].roundToInt()}°",
-                                                    fontSize = 15.sp
-                                                )
+                                                Text(text = "${weather.daily.temperature_2m_min[idx].roundToInt()}°", fontSize = 14.sp, fontWeight = FontWeight.Bold)
                                             }
                                             Row(modifier = Modifier
-                                                    .fillMaxWidth().weight(0.25f), horizontalArrangement = Arrangement.Center
-                                            ) {
-                                                Text(
-                                                    text = weather.daily.precipitation_probability_max[index].toString(),
-                                                    fontSize = 20.sp
-                                                )
-                                                Icon(
-                                                    painter = painterResource(id = R.drawable.precipition),
-                                                    contentDescription = "",
-                                                    modifier = Modifier.size(30.dp)
+                                                .fillMaxWidth()
+                                                .weight(0.25f), horizontalArrangement = Arrangement.Center)
+                                            {
+                                                Text(text = weather.daily.precipitation_probability_max[idx].toString(), fontSize = 18.sp)
+                                                Icon(painter = painterResource(id = R.drawable.precipition),
+                                                    contentDescription = "", modifier = Modifier.size(25.dp)
                                                 )
                                             }
                                         }
@@ -335,13 +387,12 @@ fun CurrentLocationDisplay(
                             }
                         }
                     }
-
                 }
                 }
             else {
                 Column(modifier = Modifier.fillMaxSize(), Arrangement.Center, Alignment.CenterHorizontally) {
-                    Text(text = "Location Found", fontSize = 25.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(10.dp))
-                    CircularProgressIndicator()
+                    Text(text = "Location Found", fontSize = 25.sp, fontWeight = FontWeight.ExtraLight, modifier = Modifier.padding(10.dp))
+                    CircularProgressIndicator(color = Color.DarkGray)
                 }
             }
         }

@@ -24,14 +24,19 @@ data class Daily(
     val temperature_2m_min: List<Double>,
     val temperature_2m_max: List<Double>,
     val weather_code: List<Int>,
-    val precipitation_probability_max: List<Int>
+    val precipitation_probability_max: List<Int>,
+    val sunrise: List<String>,
+    val sunset: List<String>,
+    val uv_index_max: List<Double>,
+    val rain_sum: List<Double>
 )
 
 @Serializable
 data class Current(
     val temperature_2m: Double,
     val weather_code: Int,
-    val wind_speed_10m: Double
+    val wind_speed_10m: Double,
+    val is_day: Int,
 )
 
 @Serializable
@@ -48,9 +53,9 @@ interface WeatherService {
     suspend fun getWeather(
         @Query("latitude") latitude: Double,
         @Query("longitude") longitude: Double,
-        @Query("current") current:String = ("temperature_2m,weather_code,wind_speed_10m"),
+        @Query("current") current:String = ("temperature_2m,weather_code,is_day,wind_speed_10m"),
         @Query("hourly") hourly:String = ("temperature_2m,precipitation_probability,weather_code,wind_speed_10m"),
-        @Query("daily") daily:String = ("weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max"),
+        @Query("daily") daily:String = ("weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,uv_index_max,rain_sum,precipitation_probability_max"),
         @Query("timezone") timezone: String = "auto"
     ): WeatherData
 }
