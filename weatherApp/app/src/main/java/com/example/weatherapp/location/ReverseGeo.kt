@@ -48,7 +48,7 @@ import retrofit2.http.Query
             viewModelScope.launch {
                 try {
                     val latlng = "${lat},${long}"
-                    val getGeo = geoService.getGeo(latlng).results[3].address_components[2].long_name
+                    val getGeo = geoService.getGeo(latlng).results[3].address_components[3].long_name
                     geo.value = getGeo
                 } catch (e: Exception) {
                     e.printStackTrace()
