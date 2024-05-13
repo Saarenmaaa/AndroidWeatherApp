@@ -51,7 +51,7 @@ fun App() {
         }
         composable("dayView/{date}/{idx}") { backStackEntry ->
             val date = backStackEntry.arguments?.getString("date") ?: ""
-            val idx = backStackEntry.arguments?.getInt("idx") ?: 0
+            val idx = backStackEntry.arguments?.getString("idx") ?: "0"
             DayView(date = date, weatherData = fetchWeather.weatherData.value[0], dayIdx = idx)
         }
     }

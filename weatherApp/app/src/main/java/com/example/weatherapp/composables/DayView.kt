@@ -27,7 +27,8 @@ import com.example.weatherapp.fetching.WeatherData
 import kotlin.math.roundToInt
 
 @Composable
-fun DayView(date: String, weatherData: WeatherData, dayIdx: Int) {
+fun DayView(date: String, weatherData: WeatherData, dayIdx: String) {
+    val dayIdx = dayIdx.toInt()
     val hourly = weatherData.hourly
     val dateL = date.length
     Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center){

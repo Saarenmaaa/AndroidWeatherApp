@@ -1,6 +1,7 @@
 package com.example.weatherapp.composables
 
 import android.location.Location
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -234,6 +235,7 @@ fun CurrentLocationDisplay(
                         }
                     }
                 }
+
             }
             else {
                 Column(modifier = Modifier.fillMaxSize(), Arrangement.Center, Alignment.CenterHorizontally) {
