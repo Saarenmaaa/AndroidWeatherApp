@@ -1,4 +1,7 @@
+<<<<<<< HEAD
 
+=======
+>>>>>>> 87152858dad9a8897850e79b0eead48873de64d7
 # Android Weather Application
 ## 🎥 Screencast 
 ### https://youtu.be/ZXvTWUCycCA
