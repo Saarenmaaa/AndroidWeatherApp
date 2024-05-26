@@ -1,4 +1,8 @@
 # Android Weather Application
+![image](https://github.com/Saarenmaaa/AndroidWeatherApp/assets/132883449/80f7b63a-bd63-4c0b-ba82-d6c1bab3803d)
+![image](https://github.com/Saarenmaaa/AndroidWeatherApp/assets/132883449/620c90a9-026e-4543-95d5-fa746ed9ed27)
+
+
 ## 🎥 Screencast 
 ### https://youtu.be/ZXvTWUCycCA
 
