@@ -28,7 +28,7 @@ import retrofit2.http.Query
         @GET("json")
         suspend fun getGeo(
             @Query("latlng") latlng: String,
-            @Query("key") current: String = "AIzaSyBnopuYrOmmUApUZNRUUtXGxquqia-RR9Q"
+            @Query("key") current: String = "Apikeyhere"
         ): GeoData
     }
 
