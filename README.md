@@ -2,7 +2,7 @@
 ![image](https://github.com/Saarenmaaa/AndroidWeatherApp/assets/132883449/80f7b63a-bd63-4c0b-ba82-d6c1bab3803d)
 ![image](https://github.com/Saarenmaaa/AndroidWeatherApp/assets/132883449/620c90a9-026e-4543-95d5-fa746ed9ed27)
 
-### Release 1.0.0 Out
+### Release 1.0.0 Out.
 
 * Target SDK-version: 34
 * Min SDK-version: 26
