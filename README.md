@@ -7,7 +7,7 @@
 * Target SDK-version: 34
 * Min SDK-version: 26
 
-## Weather API License:
+## Weather API License
 - https://creativecommons.org/licenses/by/4.0/
 - Zippenfenig, P. (2023) Open-Meteo.com Weather API. Zenodo. doi: 10.5281/ZENODO.7970649.
 - https://open-meteo.com/en/docs
